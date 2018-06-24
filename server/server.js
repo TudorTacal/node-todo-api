@@ -1,50 +1,26 @@
-var mongoose = require('mongoose');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/TodoApp');
+const { mongoose } =require('./db/mongoose');
+const { Todo } = require('./models/todo');
+const { User } = require('./models/user');
 
-const Todo = mongoose.model('Todo', {
-  text: {
-    type: String,
-    required: true,
-    minLength: 1,
-    trim: true,
-  },
-  completed: {
-    type: Boolean,
-    default: false,
-  },
-  completedAt: {
-    type: Number,
-    default: null
-  }
+const app = express();
+
+app.use(bodyParser.json());
+
+app.post('/todos', (req, res) => {
+  const todo = new Todo({
+    text: req.body.text 
+  });
+  todo.save().then((doc) => {
+    res.send(doc);
+  }, (e) => {
+    res.status(400).send(e);
+  })
 });
 
-const User = mongoose.model('User', {
-  email: {
-    type: String,
-    required: true,
-    minLength: 1,
-    trim: true
-  }
-})
-const newTodo = new Todo({
-  text: true,
+app.listen(3000, () => {
+  console.log('Started on port 3000');
 });
 
-newTodo.save().then((doc) => {
-  console.log('Saved todo', doc);
-  
-}, (e) => {
-  console.log('Unable to save todo', e);
-});
-
-const newUser = new User({
-  email: 'tudor@email.com'
-})
-
-newUser.save().then(doc => {
-  console.log('Saved user', doc);
-}, (e) => {
-  console.log('Unable to save user', e);
-});
